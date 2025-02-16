@@ -20,6 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            'tts_action_server = tts_ros.tts_action_server:main',
         ],
     },
 )

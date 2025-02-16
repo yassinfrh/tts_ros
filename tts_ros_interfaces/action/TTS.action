@@ -1,0 +1,6 @@
+string text
+---
+bool result
+---
+float32 progress
+string current_word
