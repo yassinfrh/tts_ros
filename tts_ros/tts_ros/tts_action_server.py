@@ -7,6 +7,8 @@ from pyht import Client
 from dotenv import load_dotenv
 from pyht.client import TTSOptions
 import os
+from playsound import playsound
+import tempfile
 
 class TTSActionServer(Node):
 
@@ -33,13 +35,11 @@ class TTSActionServer(Node):
         
         text = goal_handle.request.text
         
-        file_path = os.path.expanduser('~/output.wav')
-        # Create file if it doesn't exist
-        open(file_path, 'w').close()
-        
-        with open(file_path, 'wb') as f:
+        with tempfile.NamedTemporaryFile(suffix='.wav') as f:
             for chunk in self.client.tts(text, self.options, voice_engine='Play3.0-mini'):
                 f.write(chunk)
+            f.seek(0)
+            playsound(f.name)
                 
         goal_handle.succeed()
         result = TTS.Result()
