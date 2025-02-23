@@ -5,7 +5,7 @@ from tts_ros_interfaces.action import TTS
 
 from pyht import Client
 from dotenv import load_dotenv
-from pyht.client import TTSOptions
+from pyht.client import TTSOptions, Language
 import os
 from playsound import playsound
 import tempfile
@@ -25,18 +25,25 @@ class TTSActionServer(Node):
             user_id=os.getenv('PLAY_HT_USER_ID'),
             api_key=os.getenv('PLAY_HT_API_KEY')
         )
-        
-        self.options = TTSOptions(voice="s3://voice-cloning-zero-shot/7b97b543-7877-41b6-86ee-aa1e0b6c110e/dicksaad/manifest.json")
-        
+                
         self.get_logger().info('TTS Action Server has been started')
 
     def execute_callback(self, goal_handle):
         self.get_logger().info('Executing goal...')
         
         text = goal_handle.request.text
+        language = goal_handle.request.language
+        
+        if language == 'en':
+            options = TTSOptions(voice="s3://voice-cloning-zero-shot/7b97b543-7877-41b6-86ee-aa1e0b6c110e/dicksaad/manifest.json", language=Language.ENGLISH)
+        elif language == 'it':
+            options = TTSOptions(voice="s3://voice-cloning-zero-shot/6e37fdd4-d1f4-4318-bb28-5463faedc21f/original/manifest.json", language=Language.ITALIAN)
+        else:
+            goal_handle.abort()
+            return
         
         with tempfile.NamedTemporaryFile(suffix='.wav') as f:
-            for chunk in self.client.tts(text, self.options, voice_engine='Play3.0-mini'):
+            for chunk in self.client.tts(text, options, voice_engine='Play3.0-mini', protocol='http'):
                 f.write(chunk)
             f.seek(0)
             playsound(f.name)
